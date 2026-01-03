@@ -15,6 +15,11 @@ declare global{
     }
 }
 
+export enum userRole{
+    ADMIN="ADMIN",
+    USER="USER"
+}
+
 const auth=(...roles:string[])=>{
     return async (req:Request,res:Response,next:NextFunction)=>{
         try {
