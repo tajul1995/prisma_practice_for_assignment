@@ -29,7 +29,7 @@ const seedAdmin=async()=>{
   body: JSON.stringify(adminData),
 })
 
-console.log(res)
+// console.log(res)
 if(res.ok){
     await prisma.user.update({
         where:{
