@@ -3,6 +3,7 @@ import { Post, PostStatus } from "../../generated/prisma/client";
 
 import { prisma } from "../lib/prisma";
 
+
 const createPost =async(data:Omit<Post,"id"|"createdAt"|"updatedAt"|"authorId">,userId:string)=>{
     const result =await prisma.post.create(
       {
@@ -14,8 +15,8 @@ const createPost =async(data:Omit<Post,"id"|"createdAt"|"updatedAt"|"authorId">,
     return result
 }
 
-const getAllPost=async(search:string,tags:string[]|[],isFeatured:boolean,status:PostStatus,authorId:string|undefined,page:number,limit:number,skip:number,sortBy:string|undefined,
-  sortOrder:string|undefined
+const getAllPost=async(search:string,tags:string[]|[],isFeatured:boolean,status:PostStatus,authorId:string|undefined,page:number,limit:number,skip:number,sortBy:string,
+  sortOrder:string
 )=>{
   const andCondition:PostWhereInput[]=[]
   if(search){
@@ -58,22 +59,63 @@ const getAllPost=async(search:string,tags:string[]|[],isFeatured:boolean,status:
   const result =await prisma.post.findMany({
     take:limit,
     skip,
-    where:{
-      AND:andCondition
+     where:{
+        AND:andCondition
+    },
+    
       
     
       
       
-    },
-    orderBy:sortBy&&sortOrder?{
+   
+    orderBy:{
       [sortBy]:sortOrder
-    }:{createdAt:"desc"}
+    }
   })
-  return result
+  const count= await prisma.post.count({
+      where:{
+        AND:andCondition
+    }
+  })
+  return {
+    data:result,
+    pagination:{
+      total:count,
+      page,
+      limit,
+      totalPages:Math.ceil(count/limit)
+    }
+  }
 }
 
+const getPostById = async (postId: string) => {
+  return await prisma.$transaction(async (tx) => {
+    
+    await tx.post.update({
+      where: { id: postId },
+      data: {
+        views: {
+          increment: 1
+        }
+      }
+    });
 
+    
+    const postData = await tx.post.findUnique({
+      where: { id: postId }
+    });
+
+    return postData;
+  });
+
+  
+};
+
+
+
+  
 export const  postService={
     createPost,
-    getAllPost
+    getAllPost,
+    getPostById
 }

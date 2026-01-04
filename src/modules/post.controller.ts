@@ -3,6 +3,7 @@ import { Request, Response } from "express"
 import { postService } from "./post.service"
 import { PostStatus } from "../../generated/prisma/enums"
 import paginationSortingHelpers from "../helpers/paginationBysorting"
+import { asyncWrapProviders } from "node:async_hooks"
 
 const createPost=async(req:Request,res:Response)=>{
    
@@ -74,7 +75,37 @@ try {
     }
 }
 
+
+const getPostById=async(req:Request,res:Response)=>{
+    try {
+        const{postId}=req.params
+        if(!postId){
+            return res.status(404).json({
+            success:false,
+            message:' invalied postId',
+            
+        })
+        }
+        const result= await postService.getPostById(postId)
+        res.status(200).json({
+            success:true,
+            message:'get  unique post successfully',
+            data:result
+        })
+
+    } catch (error:any) {
+        res.status(404).json({
+            success:false,
+            message:'don get unique post',
+            data:error.message
+        })
+    }
+
+}
+
+
 export const postController={
     createPost,
-    getAllPost
+    getAllPost,
+    getPostById
 }
