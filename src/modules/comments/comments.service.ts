@@ -1,3 +1,4 @@
+import { CommentStatus } from "../../../generated/prisma/enums"
 import { prisma } from "../../lib/prisma"
 
  type Comment={
@@ -79,9 +80,34 @@ const deleteComment=async(Id:string,authorId :string)=>{
     })
     return result
 }
+
+const updateComment=async(commentId:string,data:{content?:string,status?:CommentStatus},authorId:string)=>{
+     const commentData = await prisma.comment.findFirst({
+        where:{
+            id:commentId,
+            authorId
+
+        }
+        
+    })
+    if(!commentData){
+        throw new Error("your input is invalied")
+    }
+    return await prisma.comment.update({
+        where:{
+            id:commentId
+        },
+        data
+    })
+}
+
+
+
+
 export const commentService={
     createComment,
     getCommentById,
     getCommentByAuthor,
-    deleteComment
+    deleteComment,
+    updateComment
 }
